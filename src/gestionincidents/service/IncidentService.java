@@ -5,6 +5,7 @@ import gestionincidents.model.Ticket;
 import gestionincidents.model.Utilisateur;
 import gestionincidents.model.Statut;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class IncidentService {
@@ -16,12 +17,15 @@ public class IncidentService {
     }
 
     //Creer un nouveau ticket
-    public Ticket creerTicket(String titre, String description, Utilisateur createur) {
+    public Ticket creerTicket(String titre, String description, Utilisateur createur,LocalDate date,String location) {
         if (titre == null || titre.trim().isEmpty()) {
             throw new IllegalArgumentException("Le titre du ticket ne peut pas être vide.");
         }
         if (createur == null) {
             throw new IllegalArgumentException("Un ticket doit obligatoirement avoir un créateur.");
+        }
+        if (date==null){
+            throw new IllegalArgumentException("La date est requise");
         }
 
         // verif doublon
@@ -30,7 +34,7 @@ public class IncidentService {
             throw new IllegalStateException("Un ticket avec ce titre a déjà été déclaré par cet utilisateur.");
         }
 
-        Ticket nouveauTicket = new Ticket(null, titre, description, createur);
+        Ticket nouveauTicket = new Ticket(null, titre, description, createur, date, location);
         return ticketDao.sauvegarder(nouveauTicket);
     }
 
