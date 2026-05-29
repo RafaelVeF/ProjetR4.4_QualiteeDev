@@ -185,11 +185,9 @@ public class InterfaceAcceuil extends JFrame{
         int ligneSelectionnee = ticketTable.getSelectedRow();
 
         if (ligneSelectionnee != -1) {
-            // 1. On récupère l'ID du ticket
             String idTexte = (String) tableModel.getValueAt(ligneSelectionnee, 0);
             Long ticketId = Long.parseLong(idTexte.substring(1)); // On enlève le "-" ou "#"
 
-            // 2. On demande confirmation (Critère UX essentiel !)
             int choix = JOptionPane.showConfirmDialog(
                     this,
                     "Êtes-vous sûr de vouloir supprimer définitivement le ticket #" + ticketId + " ?",
@@ -198,11 +196,10 @@ public class InterfaceAcceuil extends JFrame{
                     JOptionPane.WARNING_MESSAGE
             );
 
-            // 3. Si l'utilisateur clique sur "Oui"
             if (choix == JOptionPane.YES_OPTION) {
                 try {
-                    incidentService.supprimerTicket(ticketId); // Appel au G1
-                    rafraichirTableau(); // On met à jour l'affichage
+                    incidentService.supprimerTicket(ticketId);
+                    rafraichirTableau();
                     JOptionPane.showMessageDialog(this, "Ticket supprimé avec succès.");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
