@@ -27,6 +27,9 @@ public class IncidentService {
         if (date==null){
             throw new IllegalArgumentException("La date est requise");
         }
+        if (location==null){
+            throw new IllegalArgumentException("Vous devez saisir un lieu de panne");
+        }
 
         // verif doublon
         Ticket ticketExistant = ticketDao.trouverParTitreEtCreateur(titre, createur.getId());

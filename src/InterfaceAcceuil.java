@@ -8,6 +8,7 @@ import gestionincidents.UtilisateurService;
 //Installation de swing pour l'interface
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.List;
 
@@ -58,14 +59,27 @@ public class InterfaceAcceuil extends JFrame{
         titreLabel.setFont(new Font("Arial", Font.BOLD, 20));
         topPanel.add(titreLabel, BorderLayout.WEST);
 
-        //Bouton pour créer un ticket
-        JButton btnNouveau = new JButton("Créer un ticket");
+        //recherche de ticket
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // Aligné à droite
+        JLabel lblRecherche = new JLabel("Rechercher : ");
+        JTextField txtRecherche = new JTextField(15);
+        searchPanel.add(lblRecherche);
+        searchPanel.add(txtRecherche);
+
+        //creation de ticket
+        JButton btnNouveau = new JButton("+ Créer un ticket");
         btnNouveau.addActionListener(e -> {
             InterfaceCreation popupCreation = new InterfaceCreation(this, incidentService, utilisateurService);
             popupCreation.setVisible(true);
         });
-        topPanel.add(btnNouveau, BorderLayout.EAST);
-        add(topPanel,BorderLayout.NORTH);
+        searchPanel.add(btnNouveau);
+
+        topPanel.add(searchPanel, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
+
+
+
+        //Tableau des tickets -----------
 
         //Definition du tableau des tickets
         String[] colonnes = {"ID","Titre","Status","Demandeur","Date","Lieu"};
@@ -81,6 +95,28 @@ public class InterfaceAcceuil extends JFrame{
         JScrollPane scrollPane = new JScrollPane(ticketTable);//ajout du tableau pour l'interface de scolling
         add(scrollPane,BorderLayout.CENTER);
         //ajoute une barre de scroll
+
+
+        //filtre pour la recherche
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+        ticketTable.setRowSorter(sorter);
+
+        txtRecherche.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void filtrer() {
+                String texte = txtRecherche.getText();
+                if (texte.trim().isEmpty()){
+                    sorter.setRowFilter(null); //affiche tout si vide
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texte));//casse avec ?i
+                }
+            }
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { filtrer(); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { filtrer(); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { filtrer(); }
+        });
+
+
+
 
         JPanel bottomPanel = new JPanel();
         JButton btnModifier = new JButton("Gerer le ticket");
@@ -99,7 +135,7 @@ public class InterfaceAcceuil extends JFrame{
 
         //comportement pour le clic sur modification
         btnModifier.addActionListener(e -> ouvrirFenetreModification());
-
+        btnSupprimer.addActionListener(e -> supprimerTicket());
         add(bottomPanel,BorderLayout.SOUTH);
 
     }
@@ -145,5 +181,34 @@ public class InterfaceAcceuil extends JFrame{
         }
     }
 
+    private void supprimerTicket(){
+        int ligneSelectionnee = ticketTable.getSelectedRow();
+
+        if (ligneSelectionnee != -1) {
+            // 1. On récupère l'ID du ticket
+            String idTexte = (String) tableModel.getValueAt(ligneSelectionnee, 0);
+            Long ticketId = Long.parseLong(idTexte.substring(1)); // On enlève le "-" ou "#"
+
+            // 2. On demande confirmation (Critère UX essentiel !)
+            int choix = JOptionPane.showConfirmDialog(
+                    this,
+                    "Êtes-vous sûr de vouloir supprimer définitivement le ticket #" + ticketId + " ?",
+                    "Confirmation de suppression",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            // 3. Si l'utilisateur clique sur "Oui"
+            if (choix == JOptionPane.YES_OPTION) {
+                try {
+                    incidentService.supprimerTicket(ticketId); // Appel au G1
+                    rafraichirTableau(); // On met à jour l'affichage
+                    JOptionPane.showMessageDialog(this, "Ticket supprimé avec succès.");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
 
 }

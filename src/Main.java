@@ -27,7 +27,6 @@ public class Main {
 
         incidentService.modifierTicket(t2.getId(), t2.getTitre(), t2.getDescription(), Statut.EN_COURS, t2.getLocation());
 
-        // 4. Lancement de l'interface graphique (Swing exige d'être lancé dans un "Thread" spécifique pour être fluide)
         SwingUtilities.invokeLater(() -> {
             InterfaceAcceuil acceuil = new InterfaceAcceuil(incidentService, utilisateurService);
             acceuil.setVisible(true); // On rend la fenêtre visible
