@@ -59,8 +59,11 @@ public class InterfaceAcceuil extends JFrame{
         topPanel.add(titreLabel, BorderLayout.WEST);
 
         //Bouton pour créer un ticket
-        JButton btnNouveau = new JButton("+ Créer un ticket");
-        btnNouveau.addActionListener(e -> JOptionPane.showMessageDialog(this, "J'ai pas encore fait bruh"));
+        JButton btnNouveau = new JButton("Créer un ticket");
+        btnNouveau.addActionListener(e -> {
+            InterfaceCreation popupCreation = new InterfaceCreation(this, incidentService, utilisateurService);
+            popupCreation.setVisible(true);
+        });
         topPanel.add(btnNouveau, BorderLayout.EAST);
         add(topPanel,BorderLayout.NORTH);
 
@@ -84,6 +87,19 @@ public class InterfaceAcceuil extends JFrame{
         JButton btnSupprimer = new JButton("Supprimer le ticket");
         bottomPanel.add(btnModifier);
         bottomPanel.add(btnSupprimer);
+        //desactivé de base
+        btnModifier.setEnabled(false);
+        btnSupprimer.setEnabled(false);
+
+        ticketTable.getSelectionModel().addListSelectionListener(e -> {
+            boolean estSelectionne = ticketTable.getSelectedRow() != -1;//si une ligne est selectionn
+            btnModifier.setEnabled(estSelectionne);//reactive les boutons
+            btnSupprimer.setEnabled(estSelectionne);
+        });
+
+        //comportement pour le clic sur modification
+        btnModifier.addActionListener(e -> ouvrirFenetreModification());
+
         add(bottomPanel,BorderLayout.SOUTH);
 
     }
@@ -92,7 +108,7 @@ public class InterfaceAcceuil extends JFrame{
 
     //rafraichit le tableau et le remplir avec les dernieres
     //donnés
-    private void rafraichirTableau(){
+    protected void rafraichirTableau(){
         tableModel.setRowCount(0);//vide les lignes
 
         List<Ticket> tickets = incidentService.obtenirTousLesTickets();
@@ -109,6 +125,24 @@ public class InterfaceAcceuil extends JFrame{
             tableModel.addRow(ligne);
         }
 
+    }
+
+
+    //ouvrir le tableau de modif
+    private void ouvrirFenetreModification() {
+        int ligneSelectionnee = ticketTable.getSelectedRow();//ligne cible
+        if (ligneSelectionnee != -1) {
+            String idTexte = (String) tableModel.getValueAt(ligneSelectionnee, 0);
+            Long ticketId = Long.parseLong(idTexte.substring(1));//enleve le premier caractère -
+
+            Ticket ticket = incidentService.obtenirTicket(ticketId);
+
+            if (ticket != null) {
+                //ouvre l'interface de mofif si ticket existe bien
+                InterfaceModification popup = new InterfaceModification(this, incidentService, ticket);
+                popup.setVisible(true);
+            }
+        }
     }
 
 

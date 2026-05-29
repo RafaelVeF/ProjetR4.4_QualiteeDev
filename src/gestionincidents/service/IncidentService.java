@@ -49,7 +49,7 @@ public class IncidentService {
         return ticketDao.trouverTous();
     }
 
-    public Ticket modifierTicket(Long id, String nouveauTitre, String nouvelleDescription, Statut nouveauStatut) {
+    public Ticket modifierTicket(Long id, String nouveauTitre, String nouvelleDescription, Statut nouveauStatut, String nouveauLieu) {
         if (id == null) {
             throw new IllegalArgumentException("L'ID du ticket à modifier ne peut pas être nul.");
         }
@@ -65,6 +65,7 @@ public class IncidentService {
         ticket.setTitre(nouveauTitre);
         ticket.setDescription(nouvelleDescription);
         ticket.setStatut(nouveauStatut);
+        ticket.setLocation(nouveauLieu);
 
         return ticketDao.sauvegarder(ticket);
     }
