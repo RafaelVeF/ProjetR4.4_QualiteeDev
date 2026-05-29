@@ -89,6 +89,20 @@ public class InterfaceModification extends JDialog {
             String lieu = txtLieu.getText();
             Statut statut = (Statut) comboStatut.getSelectedItem();
 
+            if (titre.trim().isEmpty()) {
+                lblErreur.setText("Erreur : Le titre ne peut pas être vide.");
+                return;
+            }
+            if (lieu.trim().isEmpty()) {
+                lblErreur.setText("Erreur : La localisation est obligatoire.");
+                return;
+            }
+            if (description.trim().isEmpty()) {
+                lblErreur.setText("Erreur : La description ne peut pas être vide.");
+                return;
+            }
+
+
             //modifie les champs, rafraichit et ferme la fenetre
             incidentService.modifierTicket(ticket.getId(), titre, description, statut, lieu);
             fenetreParente.rafraichirTableau();
@@ -98,6 +112,8 @@ public class InterfaceModification extends JDialog {
             //gestion erreur
         } catch (IllegalArgumentException ex) {
             lblErreur.setText("Erreur : " + ex.getMessage());
+        }catch (Exception ex) {
+            lblErreur.setText("Une erreur inattendue est survenue.");
         }
     }
 }
