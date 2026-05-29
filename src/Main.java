@@ -25,7 +25,7 @@ public class Main {
         incidentService.creerTicket("Panne Serveur", "Le serveur de l'amphi A ne répond plus.", user1,LocalDate.of(2026, 5, 28),"Salle 102");
         Ticket t2 = incidentService.creerTicket("Imprimante bloquée", "Bourrage papier",user2, LocalDate.now(),"Secretariat");
 
-        incidentService.modifierTicket(t2.getId(), t2.getTitre(), t2.getDescription(), Statut.EN_COURS);
+        incidentService.modifierTicket(t2.getId(), t2.getTitre(), t2.getDescription(), Statut.EN_COURS, t2.getLocation());
 
         // 4. Lancement de l'interface graphique (Swing exige d'être lancé dans un "Thread" spécifique pour être fluide)
         SwingUtilities.invokeLater(() -> {
