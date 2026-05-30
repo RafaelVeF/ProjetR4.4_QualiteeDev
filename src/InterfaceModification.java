@@ -1,6 +1,6 @@
-import gestionincidents.model.Statut;
-import gestionincidents.model.Ticket;
-import gestionincidents.service.IncidentService;
+import modele.Statut;
+import modele.Ticket;
+import service.MockIncidentService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,21 +8,21 @@ import java.awt.*;
 //fenetre popup
 public class InterfaceModification extends JDialog {
 
-    private IncidentService incidentService;
+    private MockIncidentService MockIncidentService;
     private InterfaceAcceuil fenetreParente;
     private Ticket ticket; // Le ticket qu'on est en train de modifier
 
     //composants
-    private JTextField txtTitre;
-    private JTextArea txtDescription;
-    private JComboBox<Statut> comboStatut;
-    private JTextField txtLieu;
-    private JLabel lblErreur;
+    JTextField txtTitre;
+    JTextArea txtDescription;
+    JComboBox<Statut> comboStatut;
+    JTextField txtLieu;
+    JLabel lblErreur;
 
-    public InterfaceModification(InterfaceAcceuil parent, IncidentService incidentService, Ticket ticket) {
+    public InterfaceModification(InterfaceAcceuil parent, MockIncidentService MockIncidentService, Ticket ticket) {
         super(parent, "Gérer le ticket #" + ticket.getId(), true);
         this.fenetreParente = parent;
-        this.incidentService = incidentService;
+        this.MockIncidentService = MockIncidentService;
         this.ticket = ticket;
 
         configurerFenetre();
@@ -82,7 +82,7 @@ public class InterfaceModification extends JDialog {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private void validerModification() {
+    void validerModification() {
         try {
             String titre = txtTitre.getText();
             String description = txtDescription.getText();
@@ -104,10 +104,10 @@ public class InterfaceModification extends JDialog {
 
 
             //modifie les champs, rafraichit et ferme la fenetre
-            incidentService.modifierTicket(ticket.getId(), titre, description, statut, lieu);
+            MockIncidentService.modifierTicket(ticket.getId(), titre, description, statut, lieu);
             fenetreParente.rafraichirTableau();
             dispose();
-            JOptionPane.showMessageDialog(fenetreParente, "Ticket mis à jour avec succès !", "Succès", JOptionPane.INFORMATION_MESSAGE);
+            if (!Main.modeTest) JOptionPane.showMessageDialog(fenetreParente, "Ticket mis à jour avec succès !", "Succès", JOptionPane.INFORMATION_MESSAGE);
 
             //gestion erreur
         } catch (IllegalArgumentException ex) {

@@ -1,7 +1,6 @@
-package gestionincidents.model;
+package modele;
 
 public enum Statut {
-    NOUVEAU,
     EN_COURS,
     RESOLU,
     ANNULE
