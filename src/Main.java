@@ -26,7 +26,7 @@ public class Main {
         Utilisateur u3 = utilisateurService.creerUtilisateur("Marc Dupont", "marcdupont@iut.fr",Role.CLASSIQUE);
         Utilisateur u4 = utilisateurService.creerUtilisateur("Sophie Leroux", "sophieleroux@iut.fr",Role.TECHNICIEN);
 
-        Utilisateur utilisateurConnecte = u1;
+        Utilisateur utilisateurConnecte = u0;
 
 
         incidentService.creerTicket("Panne Serveur", "Le serveur de l'amphi A ne répond plus.", u1, LocalDate.of(2026, 5, 28), "Amphi A");
