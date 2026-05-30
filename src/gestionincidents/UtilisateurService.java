@@ -1,6 +1,7 @@
 package gestionincidents;
 
 import gestionincidents.dao.UtilisateurDao;
+import gestionincidents.model.Role;
 import gestionincidents.model.Utilisateur;
 import java.util.List;
 
@@ -13,19 +14,22 @@ public class UtilisateurService {
     }
 
     //Crée un nouvel utilisateur.
-    public Utilisateur creerUtilisateur(String nom, String email) {
+    public Utilisateur creerUtilisateur(String nom, String email, Role role) {
         if (nom == null || nom.trim().isEmpty()) {
             throw new IllegalArgumentException("Le nom de l'utilisateur ne peut pas être vide.");
         }
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("L'email ne peut pas être vide.");
         }
+        if( role == null ) {
+            throw new IllegalArgumentException("Le role ne peut pas etre vide");
+        }
 
         if (utilisateurDao.trouverParEmail(email) != null || utilisateurDao.trouverParEmail(email) != null) {
             throw new IllegalStateException("Un utilisateur avec cette adresse email existe déjà.");
         }
 
-        Utilisateur nouvelUtilisateur = new Utilisateur(null, nom, email);
+        Utilisateur nouvelUtilisateur = new Utilisateur(null, nom, email,role);
         return utilisateurDao.sauvegarder(nouvelUtilisateur);
     }
 

@@ -2,6 +2,7 @@
 import gestionincidents.UtilisateurService;
 import gestionincidents.dao.TicketDaoMemory;
 import gestionincidents.dao.UtilisateurDaoMemory;
+import gestionincidents.model.Role;
 import gestionincidents.model.Statut;
 import gestionincidents.model.Ticket;
 import gestionincidents.model.Utilisateur;
@@ -19,10 +20,14 @@ public class Main {
         IncidentService incidentService = new IncidentService(ticketDao);
         UtilisateurService utilisateurService = new UtilisateurService(utilisateurDao);
 
-        Utilisateur u1 = utilisateurService.creerUtilisateur("Noa Audegond", "noa@iut.fr");
-        Utilisateur u2 = utilisateurService.creerUtilisateur("Alice Martin", "alice@iut.fr");
-        Utilisateur u3 = utilisateurService.creerUtilisateur("Marc Dupont", "marc@iut.fr");
-        Utilisateur u4 = utilisateurService.creerUtilisateur("Sophie Leroux", "sophie@iut.fr");
+        Utilisateur u0 = utilisateurService.creerUtilisateur("Jean Lemerc", "jeanlem@iut.fr",Role.TECHNICIEN);
+        Utilisateur u1 = utilisateurService.creerUtilisateur("Noa Audegond", "noaaud@iut.fr", Role.CLASSIQUE);
+        Utilisateur u2 = utilisateurService.creerUtilisateur("Alice Martin", "alicemartin@iut.fr",Role.TECHNICIEN);
+        Utilisateur u3 = utilisateurService.creerUtilisateur("Marc Dupont", "marcdupont@iut.fr",Role.CLASSIQUE);
+        Utilisateur u4 = utilisateurService.creerUtilisateur("Sophie Leroux", "sophieleroux@iut.fr",Role.TECHNICIEN);
+
+        Utilisateur utilisateurConnecte = u1;
+
 
         incidentService.creerTicket("Panne Serveur", "Le serveur de l'amphi A ne répond plus.", u1, LocalDate.of(2026, 5, 28), "Amphi A");
         incidentService.creerTicket("Clavier défectueux", "Touche espace cassée.", u3, LocalDate.now(), "Salle 204");
@@ -44,8 +49,8 @@ public class Main {
         incidentService.modifierTicket(t10.getId(), t10.getTitre(), "Erreur, c'était juste une bouteille renversée.", Statut.ANNULE, t10.getLocation());
 
         SwingUtilities.invokeLater(() -> {
-            InterfaceAcceuil acceuil = new InterfaceAcceuil(incidentService, utilisateurService);
-            acceuil.setVisible(true); // On rend la fenêtre visible
+            InterfaceAcceuil acceuil = new InterfaceAcceuil(incidentService, utilisateurService, utilisateurConnecte);
+            acceuil.setVisible(true);
         });
     }
 }

@@ -120,6 +120,10 @@ public class InterfaceCreation extends JDialog {
                     lblErreur.setText("Erreur : La date doit etre antérieure ou égale à aujourd'hui");
                     return;
                 }
+                if (date.isBefore(LocalDate.now().minusMonths(2))) {
+                    lblErreur.setText("Erreur : la date est trop ancienne pour être prise en compte");
+                    return;
+                }
             } catch (DateTimeParseException ex) {
                 lblErreur.setText("Erreur : Le format de la date doit être JJ/MM/AAAA");
                 return;
