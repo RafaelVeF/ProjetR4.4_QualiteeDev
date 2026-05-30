@@ -1,6 +1,8 @@
 //Import des dependances necessaires
 
+import gestionincidents.model.Role;
 import gestionincidents.model.Ticket;
+import gestionincidents.model.Utilisateur;
 import gestionincidents.service.IncidentService;
 import gestionincidents.UtilisateurService;
 //Changer les dependances si necessaire
@@ -18,18 +20,19 @@ import java.util.List;
 public class InterfaceAcceuil extends JFrame{
 
 
-
     private IncidentService incidentService;
     private UtilisateurService utilisateurService;
+    private Utilisateur utilisateurConnecte;
     private JTable ticketTable;
     private DefaultTableModel tableModel;
 
 
 
     //Classe qui servira à lancer l'interface d'acceuil
-    public InterfaceAcceuil(IncidentService incidentService,UtilisateurService utilisateurService){
+    public InterfaceAcceuil(IncidentService incidentService,UtilisateurService utilisateurService, Utilisateur utilisateurConnecte){
         this.incidentService = incidentService;
         this.utilisateurService = utilisateurService;
+        this.utilisateurConnecte = utilisateurConnecte;
 
         configurerFenetre();
         initialiserComposants();
@@ -123,14 +126,23 @@ public class InterfaceAcceuil extends JFrame{
         JButton btnSupprimer = new JButton("Supprimer le ticket");
         bottomPanel.add(btnModifier);
         bottomPanel.add(btnSupprimer);
-        //desactivé de base
-        btnModifier.setEnabled(false);
-        btnSupprimer.setEnabled(false);
+
+        //desactivé de base et invisible pour les utilisateurs classique
+        if(utilisateurConnecte.getRole()== Role.CLASSIQUE){
+            btnModifier.setVisible(false);
+            btnSupprimer.setVisible(false);
+        }
+        else{
+            btnModifier.setEnabled(false);
+            btnSupprimer.setEnabled(false);
+        }
 
         ticketTable.getSelectionModel().addListSelectionListener(e -> {
             boolean estSelectionne = ticketTable.getSelectedRow() != -1;//si une ligne est selectionn
-            btnModifier.setEnabled(estSelectionne);//reactive les boutons
-            btnSupprimer.setEnabled(estSelectionne);
+            if(utilisateurConnecte.getRole() == Role.TECHNICIEN){
+                btnModifier.setEnabled(estSelectionne);//reactive les boutons
+                btnSupprimer.setEnabled(estSelectionne);
+            }
         });
 
         //comportement pour le clic sur modification
@@ -150,6 +162,12 @@ public class InterfaceAcceuil extends JFrame{
         List<Ticket> tickets = incidentService.obtenirTousLesTickets();
 
         for(Ticket t : tickets){
+
+            //N'afficher que les tickets émis par l'utilisateur si pas technicien
+            if (utilisateurConnecte.getRole() == Role.CLASSIQUE && !t.getCreateur().getId().equals(utilisateurConnecte.getId())) {
+                continue;
+            }
+
             Object[] ligne = {
                     "-" + t.getId(),
                     t.getTitre(),

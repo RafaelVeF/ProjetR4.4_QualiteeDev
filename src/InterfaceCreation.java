@@ -114,10 +114,31 @@ public class InterfaceCreation extends JDialog {
             String description = txtDescription.getText();
             String lieu = txtLieu.getText();
             LocalDate date;
-            try { //tente de recuperer la date au bon format
+            try {
                 date = LocalDate.parse(txtDate.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                if (date.isAfter(LocalDate.now())) {
+                    lblErreur.setText("Erreur : La date doit etre antérieure ou égale à aujourd'hui");
+                    return;
+                }
+                if (date.isBefore(LocalDate.now().minusMonths(2))) {
+                    lblErreur.setText("Erreur : la date est trop ancienne pour être prise en compte");
+                    return;
+                }
             } catch (DateTimeParseException ex) {
                 lblErreur.setText("Erreur : Le format de la date doit être JJ/MM/AAAA");
+                return;
+            }
+
+            if (titre.trim().isEmpty()) {
+                lblErreur.setText("Erreur : Le titre est obligatoire.");
+                return;
+            }
+            if (lieu.trim().isEmpty()) {
+                lblErreur.setText("Erreur : La localisation est obligatoire.");
+                return;
+            }
+            if (description.trim().isEmpty()) {
+                lblErreur.setText("Erreur : Veuillez décrire le problème.");
                 return;
             }
 
