@@ -34,7 +34,8 @@ public class InterfaceModificationTest {
 
     @Test
     public void testInitialisationValeursCorrectes() {
-        MockIncidentService.modifierTicket(ticket.getId(), ticket.getTitre(), ticket.getDescription(), Statut.RESOLU, ticket.getLocation());
+        MockIncidentService.modifierTicket(ticket.getId(), ticket.getTitre(),
+                ticket.getDescription(), Statut.RESOLU, ticket.getLocation());
         
         InterfaceModification im = new InterfaceModification(parent, MockIncidentService, ticket);
         

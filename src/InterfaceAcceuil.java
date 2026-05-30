@@ -122,8 +122,6 @@ public class InterfaceAcceuil extends JFrame{
         });
 
 
-
-
         JPanel bottomPanel = new JPanel();
         btnModifier = new JButton("Gerer le ticket");
         btnSupprimer = new JButton("Supprimer le ticket");
@@ -209,13 +207,17 @@ public class InterfaceAcceuil extends JFrame{
             String idTexte = (String) tableModel.getValueAt(ligneSelectionnee, 0);
             Long ticketId = Long.parseLong(idTexte.substring(1)); // On enlève le "-" ou "#"
 
-            int choix = JOptionPane.showConfirmDialog(
-                    this,
-                    "Êtes-vous sûr de vouloir supprimer définitivement le ticket #" + ticketId + " ?",
-                    "Confirmation de suppression",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-            );
+            int choix = JOptionPane.YES_OPTION;//mode de test
+
+            if (!Main.modeTest) {//si pas instancié par un test
+                choix = JOptionPane.showConfirmDialog(
+                        this,
+                        "Êtes-vous sûr de vouloir supprimer définitivement le ticket #" + ticketId + " ?",
+                        "Confirmation de suppression",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+            }
 
             if (choix == JOptionPane.YES_OPTION) {
                 try {

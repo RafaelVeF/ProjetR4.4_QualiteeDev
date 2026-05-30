@@ -31,7 +31,8 @@ public class InterfaceCreationTest {
 
     @Test
     public void testInitialisationInterfaceCreation() {
-        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService, MockUtilisateurService);
+        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService,
+                MockUtilisateurService);
         assertNotNull(ic);
     }
 
@@ -39,7 +40,8 @@ public class InterfaceCreationTest {
     public void testInitialisationSansUtilisateur() {
         MockIncidentService = new MockIncidentService();
         MockUtilisateurService = new MockUtilisateurService();
-        Utilisateur invite = new Utilisateur(99L, "Invite", "inv@test.fr", Role.CLASSIQUE);
+        Utilisateur invite = new Utilisateur(99L, "Invite", "inv@test.fr",
+                Role.CLASSIQUE);
         parent = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, invite);
         
         assertDoesNotThrow(() -> {
@@ -65,21 +67,24 @@ public class InterfaceCreationTest {
 
     @Test
     public void testValidationFormulaireDateInvalide() {
-        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService, MockUtilisateurService);
+        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService,
+                MockUtilisateurService);
 
         ic.txtTitre.setText("Nouveau Bug");
         ic.txtDate.setText("31-02-2026"); 
         
         ic.validerFormulaire();
 
-        assertFalse(MockIncidentService.creerTicketAppele, "Le service ne devrait pas être appelé si la date est invalide");
+        assertFalse(MockIncidentService.creerTicketAppele, "Le service ne devrait " +
+                "pas être appelé si la date est invalide");
         assertEquals(0, MockIncidentService.obtenirTousLesTickets().size());
         assertTrue(ic.lblErreur.getText().contains("format de la date"));
     }
 
     @Test
     public void testValidationFormulaireChampsVides() {
-        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService, MockUtilisateurService);
+        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService,
+                MockUtilisateurService);
 
         ic.txtTitre.setText("");
         ic.txtDescription.setText("");
@@ -98,7 +103,7 @@ public class InterfaceCreationTest {
 
         ic.txtTitre.setText("<script>alert('XSS')</script>");
         ic.txtDescription.setText("DROP TABLE tickets;--");
-        ic.txtLieu.setText("😈👽💩");
+        ic.txtLieu.setText("👽");
         ic.txtDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         
         ic.validerFormulaire();
@@ -106,5 +111,45 @@ public class InterfaceCreationTest {
         assertTrue(MockIncidentService.creerTicketAppele);
         assertEquals(1, MockIncidentService.obtenirTousLesTickets().size());
         assertEquals("<script>alert('XSS')</script>", MockIncidentService.obtenirTousLesTickets().get(0).getTitre());
+    }
+
+    @Test
+    public void testValidationDateDansLeFutur() {
+        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService, MockUtilisateurService);
+
+        ic.txtTitre.setText("Nouveau Bug");
+        ic.txtDescription.setText("Impossible de se connecter");
+        ic.txtLieu.setText("Salle Informatique");
+        ic.txtDate.setText("01/01/2028");//date future
+
+        ic.validerFormulaire();
+
+        assertFalse(MockIncidentService.creerTicketAppele, "Le service ne devrait pas être appelé si la date est dans le futur");
+        assertEquals(0, MockIncidentService.obtenirTousLesTickets().size());
+        assertTrue(ic.lblErreur.getText().contains("futur") ||
+                        ic.lblErreur.getText().contains("Erreur"),
+                "L'interface doit indiquer que la date est dans le futur.");
+    }
+
+    @Test
+    public void testExceptionBackendDoublon() {
+        MockIncidentService mockDoublon = new MockIncidentService() {
+            @Override
+            public modele.Ticket creerTicket(String titre, String desc, Utilisateur c, LocalDate d, String l) {
+                throw new IllegalStateException("Un ticket avec ce titre a déjà été déclaré.");
+            }
+        };
+
+        InterfaceCreation ic = new InterfaceCreation(parent, mockDoublon, MockUtilisateurService);
+
+        ic.txtTitre.setText("Panne Serveur");//censé etre double
+        ic.txtDescription.setText("Le serveur plante");
+        ic.txtLieu.setText("Salle 102");
+        ic.txtDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        ic.validerFormulaire();
+
+        assertTrue(ic.lblErreur.getText().contains("déjà été déclaré") || ic.lblErreur.getText().contains("Système"),
+                "L'interface doit capturer l'IllegalStateException et l'afficher en rouge.");
     }
 }

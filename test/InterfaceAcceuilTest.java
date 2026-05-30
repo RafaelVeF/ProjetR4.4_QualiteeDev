@@ -39,7 +39,8 @@ public class InterfaceAcceuilTest {
     @Test
     public void testRafraichirTableauSansDonnees() {
         interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, techUser);
-        assertEquals(0, interfaceAcceuil.tableModel.getRowCount(), "Le tableau devrait être vide s'il n'y a pas de tickets.");
+        assertEquals(0, interfaceAcceuil.tableModel.getRowCount(),
+                "Le tableau devrait être vide s'il n'y a pas de tickets.");
     }
 
     @Test
@@ -49,7 +50,8 @@ public class InterfaceAcceuilTest {
 
         // En tant que technicien, il voit tout
         interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, techUser);
-        assertEquals(2, interfaceAcceuil.tableModel.getRowCount(), "Le tableau devrait contenir 2 lignes pour un technicien.");
+        assertEquals(2, interfaceAcceuil.tableModel.getRowCount(), "Le tableau devrait contenir " +
+                "2 lignes pour un technicien.");
     }
 
     @Test
@@ -71,23 +73,24 @@ public class InterfaceAcceuilTest {
         
         interfaceAcceuil.ticketTable.setRowSelectionInterval(0, 0);
         
-        assertTrue(interfaceAcceuil.btnModifier.isEnabled(), "Le technicien doit pouvoir modifier après sélection.");
-        assertTrue(interfaceAcceuil.btnSupprimer.isEnabled(), "Le technicien doit pouvoir supprimer après sélection.");
+        assertTrue(interfaceAcceuil.btnModifier.isEnabled(), "Le technicien doit pouvoir " +
+                "modifier après sélection.");
+        assertTrue(interfaceAcceuil.btnSupprimer.isEnabled(), "Le technicien doit pouvoir " +
+                "supprimer après sélection.");
     }
 
     @Test
     public void testFiltreRecherche() {
-        MockIncidentService.creerTicket("Panne Serveur", "Desc A", techUser, LocalDate.now(), "Lieu A");
-        MockIncidentService.creerTicket("Imprimante HS", "Desc B", techUser, LocalDate.now(), "Lieu B");
+        MockIncidentService.creerTicket("Panne Serveur", "Desc A",
+                techUser, LocalDate.now(), "Lieu A");
+        MockIncidentService.creerTicket("Imprimante HS", "Desc B",
+                techUser, LocalDate.now(), "Lieu B");
 
         interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, techUser);
         
         assertEquals(2, interfaceAcceuil.ticketTable.getRowCount());
         
-        // Simule la frappe
         interfaceAcceuil.txtRecherche.setText("Serveur");
-        
-        // Le TableRowSorter met à jour la table
         assertEquals(1, interfaceAcceuil.ticketTable.getRowCount());
     }
 
@@ -96,8 +99,10 @@ public class InterfaceAcceuilTest {
         interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, classiqueUser);
         
         // Pour un classique, les boutons doivent être invisibles
-        assertFalse(interfaceAcceuil.btnModifier.isVisible(), "L'utilisateur classique ne doit pas voir le bouton Modifier");
-        assertFalse(interfaceAcceuil.btnSupprimer.isVisible(), "L'utilisateur classique ne doit pas voir le bouton Supprimer");
+        assertFalse(interfaceAcceuil.btnModifier.isVisible(), "L'utilisateur classique" +
+                " ne doit pas voir le bouton Modifier");
+        assertFalse(interfaceAcceuil.btnSupprimer.isVisible(), "L'utilisateur classique " +
+                "ne doit pas voir le bouton Supprimer");
     }
 
     @Test
@@ -111,11 +116,29 @@ public class InterfaceAcceuilTest {
         
         // Connexion en classique
         interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, classiqueUser);
-        assertEquals(1, interfaceAcceuil.tableModel.getRowCount(), "Un utilisateur CLASSIQUE ne doit voir que ses propres tickets");
+        assertEquals(1, interfaceAcceuil.tableModel.getRowCount(), "Un utilisateur CLASSIQUE " +
+                "ne doit voir que ses propres tickets");
         assertEquals("Panne Mon PC", interfaceAcceuil.tableModel.getValueAt(0, 1));
         
         // Connexion en technicien
         InterfaceAcceuil interfaceTech = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, techUser);
-        assertEquals(2, interfaceTech.tableModel.getRowCount(), "Un technicien doit voir tous les tickets");
+        assertEquals(2, interfaceTech.tableModel.getRowCount(), "Un technicien " +
+                "doit voir tous les tickets");
+    }
+
+    @Test
+    public void testSuppressionTicket() {
+        MockIncidentService.creerTicket("Ticket à supprimer", "Desc", techUser, LocalDate.now(), "Lieu");
+        interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, techUser);
+
+        assertEquals(1, interfaceAcceuil.ticketTable.getRowCount(), "Le ticket doit être présent au début.");
+
+        interfaceAcceuil.ticketTable.setRowSelectionInterval(0, 0);
+        interfaceAcceuil.btnSupprimer.doClick();
+
+        assertTrue(MockIncidentService.supprimerTicketAppele, "Le service " +
+                "de suppression du backend doit avoir été appelé.");
+        assertEquals(0, interfaceAcceuil.ticketTable.getRowCount(), "Le ticket " +
+                "doit avoir disparu du tableau instantanément.");
     }
 }
