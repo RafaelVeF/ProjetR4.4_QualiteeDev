@@ -116,6 +116,7 @@ public class InterfaceModificationTest {
         method.invoke(obj);
     }
 
+
     private void fermerPopupAutomatiquement() {
         new Thread(() -> {
             try {
