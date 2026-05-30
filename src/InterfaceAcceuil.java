@@ -25,7 +25,9 @@ public class InterfaceAcceuil extends JFrame{
     private Utilisateur utilisateurConnecte;
     private JTable ticketTable;
     private DefaultTableModel tableModel;
-
+    private JButton btnModifier;
+    private JButton btnSupprimer;
+    private JTextField txtRecherche;
 
 
     //Classe qui servira à lancer l'interface d'acceuil
@@ -65,7 +67,7 @@ public class InterfaceAcceuil extends JFrame{
         //recherche de ticket
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // Aligné à droite
         JLabel lblRecherche = new JLabel("Rechercher : ");
-        JTextField txtRecherche = new JTextField(15);
+        txtRecherche = new JTextField(15);
         searchPanel.add(lblRecherche);
         searchPanel.add(txtRecherche);
 
@@ -122,8 +124,8 @@ public class InterfaceAcceuil extends JFrame{
 
 
         JPanel bottomPanel = new JPanel();
-        JButton btnModifier = new JButton("Gerer le ticket");
-        JButton btnSupprimer = new JButton("Supprimer le ticket");
+        btnModifier = new JButton("Gerer le ticket");
+        btnSupprimer = new JButton("Supprimer le ticket");
         bottomPanel.add(btnModifier);
         bottomPanel.add(btnSupprimer);
 

@@ -9,6 +9,7 @@ import gestionincidents.dao.UtilisateurDaoMemory;
 import gestionincidents.model.Statut;
 import gestionincidents.model.Ticket;
 import gestionincidents.model.Utilisateur;
+import gestionincidents.model.Role;
 
 import javax.swing.*;
 import java.lang.reflect.Field;
@@ -29,59 +30,50 @@ public class InterfaceModificationTest {
         incidentService = new IncidentService(ticketDao);
         utilisateurService = new UtilisateurService(utilisateurDao);
         
-        Utilisateur u = utilisateurService.creerUtilisateur("Admin", "admin@mail.com");
+        Utilisateur u = utilisateurService.creerUtilisateur("Admin", "admin@mail.com", Role.TECHNICIEN);
         ticket = incidentService.creerTicket("Ancien Titre", "Ancienne Description", u, LocalDate.now(), "Ancien Lieu");
         
-        parent = new InterfaceAcceuil(incidentService, utilisateurService);
+        parent = new InterfaceAcceuil(incidentService, utilisateurService, u);
     }
 
     @Test
     public void testInitialisationValeursCorrectes() throws Exception {
-        // On modifie le statut pour vérifier que le composant s'initialise bien sur la bonne valeur
         incidentService.modifierTicket(ticket.getId(), ticket.getTitre(), ticket.getDescription(), Statut.RESOLU, ticket.getLocation());
         
         InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
         
         JComboBox<Statut> comboStatut = getField(im, "comboStatut");
-        assertEquals(Statut.RESOLU, comboStatut.getSelectedItem(), "Le menu déroulant doit s'initialiser sur le bon statut");
+        assertEquals(Statut.RESOLU, comboStatut.getSelectedItem());
         
         JTextField txtTitre = getField(im, "txtTitre");
-        assertEquals("Ancien Titre", txtTitre.getText(), "Le titre doit être pré-rempli correctement");
+        assertEquals("Ancien Titre", txtTitre.getText());
     }
 
     @Test
     public void testValidationModificationSucces() throws Exception {
         InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
 
-        // Modification des valeurs via réflexion
         setField(im, "txtTitre", "Titre Modifié");
         JComboBox<Statut> comboStatut = getField(im, "comboStatut");
         comboStatut.setSelectedItem(Statut.EN_COURS);
         
-        // Exécution
+        fermerPopupAutomatiquement();
         invokeValiderModification(im);
 
-        // Vérification
         Ticket ticketModifie = incidentService.obtenirTicket(ticket.getId());
-        assertEquals("Titre Modifié", ticketModifie.getTitre(), "Le titre du ticket doit avoir été mis à jour dans le service");
-        assertEquals(Statut.EN_COURS, ticketModifie.getStatut(), "Le statut doit avoir été mis à jour dans le service");
+        assertEquals("Titre Modifié", ticketModifie.getTitre());
+        assertEquals(Statut.EN_COURS, ticketModifie.getStatut());
     }
 
     @Test
     public void testValidationModificationErreur() throws Exception {
         InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
 
-        // Simulation d'une erreur en envoyant un titre vide (si géré par le service)
-        // Note : Si le service IncidentService.modifierTicket lève une IllegalArgumentException sur les champs vides,
-        // ce test le couvrira.
         setField(im, "txtTitre", ""); 
         
         invokeValiderModification(im);
         
-        // S'il y a des protections dans les services, le ticket.getTitre() n'aura pas changé
-        // ou le labelErreur contiendra un texte.
         JLabel lblErreur = getField(im, "lblErreur");
-        // On s'assure que la méthode a fini de s'exécuter sans planter l'application entière
         assertNotNull(lblErreur);
     }
 
@@ -89,20 +81,17 @@ public class InterfaceModificationTest {
     public void testTexteExtremementLong() throws Exception {
         InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
 
-        // Génère un texte de 5000 caractères
         String texteTresLong = "A".repeat(5000);
         
         setField(im, "txtTitre", texteTresLong); 
         setField(im, "txtDescription", texteTresLong); 
         
+        fermerPopupAutomatiquement();
         invokeValiderModification(im);
         
-        // S'assurer que le composant TextArea et le service supportent de grandes chaînes sans Timeout ni Crash
         Ticket ticketModifie = incidentService.obtenirTicket(ticket.getId());
-        assertNotNull(ticketModifie, "Le ticket doit toujours exister");
+        assertNotNull(ticketModifie);
     }
-
-    // --- Utilitaires ---
 
     private void setField(Object obj, String fieldName, String value) throws Exception {
         Field field = obj.getClass().getDeclaredField(fieldName);
@@ -125,5 +114,23 @@ public class InterfaceModificationTest {
         Method method = obj.getClass().getDeclaredMethod("validerModification");
         method.setAccessible(true);
         method.invoke(obj);
+    }
+
+    private void fermerPopupAutomatiquement() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(500); // Attendre que la popup s'ouvre
+                for (java.awt.Window window : java.awt.Window.getWindows()) {
+                    if (window instanceof JDialog) {
+                        JDialog dialog = (JDialog) window;
+                        if ("Succès".equals(dialog.getTitle())) {
+                            dialog.dispose(); // Ferme la popup bloquante
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }
