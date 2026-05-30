@@ -1,6 +1,6 @@
-import gestionincidents.model.Utilisateur;
-import gestionincidents.service.IncidentService;
-import gestionincidents.UtilisateurService;
+import modele.Utilisateur;
+import service.MockIncidentService;
+import service.MockUtilisateurService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,23 +12,23 @@ import java.util.List;
 // JDialog pour fenetre en avant plan
 public class InterfaceCreation extends JDialog {
 
-    private IncidentService incidentService;
-    private UtilisateurService utilisateurService;
+    private MockIncidentService MockIncidentService;
+    private MockUtilisateurService MockUtilisateurService;
     private InterfaceAcceuil fenetreParente; // Pour pouvoir rafraîchir
 
-    private JComboBox<Utilisateur> comboUtilisateurs;
-    private JTextField txtTitre;
-    private JTextArea txtDescription;
-    private JTextField txtDate;
-    private JTextField txtLieu;
-    private JLabel lblErreur; // Pour afficher les messages rouges du G1
+    JComboBox<Utilisateur> comboUtilisateurs;
+    JTextField txtTitre;
+    JTextArea txtDescription;
+    JTextField txtDate;
+    JTextField txtLieu;
+    JLabel lblErreur; // Pour afficher les messages rouges du G1
 
-    public InterfaceCreation(InterfaceAcceuil parent, IncidentService incidentService, UtilisateurService utilisateurService) {
+    public InterfaceCreation(InterfaceAcceuil parent, MockIncidentService MockIncidentService, MockUtilisateurService MockUtilisateurService) {
         super(parent, "Déclarer un nouvel incident", true);
         //bloque la fenetre d'acceuil
         this.fenetreParente = parent;
-        this.incidentService = incidentService;
-        this.utilisateurService = utilisateurService;
+        this.MockIncidentService = MockIncidentService;
+        this.MockUtilisateurService = MockUtilisateurService;
 
         configurerFenetre();
         initialiserComposants();
@@ -46,7 +46,7 @@ public class InterfaceCreation extends JDialog {
 
         formPanel.add(new JLabel("Demandeur :"));
         comboUtilisateurs = new JComboBox<>();
-        List<Utilisateur> users = utilisateurService.obtenirTousLesUtilisateurs();
+        List<Utilisateur> users = MockUtilisateurService.obtenirTousLesUtilisateurs();
         for (Utilisateur u : users) {
             comboUtilisateurs.addItem(u);//liste les utilisateurs present en base
         }
@@ -106,7 +106,7 @@ public class InterfaceCreation extends JDialog {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    private void validerFormulaire() {
+    void validerFormulaire() {
         try {
             //récupération données
             Utilisateur createur = (Utilisateur) comboUtilisateurs.getSelectedItem();
@@ -143,10 +143,10 @@ public class InterfaceCreation extends JDialog {
             }
 
             //creer le ticket avec les infos
-            incidentService.creerTicket(titre, description, createur, date, lieu);
+            MockIncidentService.creerTicket(titre, description, createur, date, lieu);
             fenetreParente.rafraichirTableau();//Maj du tdb
             dispose();//fermeture
-            JOptionPane.showMessageDialog(fenetreParente, "Ticket créé avec succès !", "Succès", JOptionPane.INFORMATION_MESSAGE);
+            if (!Main.modeTest) JOptionPane.showMessageDialog(fenetreParente, "Ticket créé avec succès !", "Succès", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (IllegalArgumentException | IllegalStateException ex) {
             lblErreur.setText("Erreur : " + ex.getMessage());

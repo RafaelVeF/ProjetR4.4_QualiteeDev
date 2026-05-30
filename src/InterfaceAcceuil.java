@@ -1,10 +1,11 @@
 //Import des dependances necessaires
 
-import gestionincidents.model.Role;
-import gestionincidents.model.Ticket;
-import gestionincidents.model.Utilisateur;
-import gestionincidents.service.IncidentService;
-import gestionincidents.UtilisateurService;
+import modele.Role;
+import modele.Statut;
+import modele.Ticket;
+import modele.Utilisateur;
+import service.MockIncidentService;
+import service.MockUtilisateurService;
 //Changer les dependances si necessaire
 
 //Installation de swing pour l'interface
@@ -20,20 +21,20 @@ import java.util.List;
 public class InterfaceAcceuil extends JFrame{
 
 
-    private IncidentService incidentService;
-    private UtilisateurService utilisateurService;
+    private MockIncidentService MockIncidentService;
+    private MockUtilisateurService MockUtilisateurService;
     private Utilisateur utilisateurConnecte;
-    private JTable ticketTable;
-    private DefaultTableModel tableModel;
-    private JButton btnModifier;
-    private JButton btnSupprimer;
-    private JTextField txtRecherche;
+    JTable ticketTable;
+    DefaultTableModel tableModel;
+    JButton btnModifier;
+    JButton btnSupprimer;
+    JTextField txtRecherche;
 
 
     //Classe qui servira à lancer l'interface d'acceuil
-    public InterfaceAcceuil(IncidentService incidentService,UtilisateurService utilisateurService, Utilisateur utilisateurConnecte){
-        this.incidentService = incidentService;
-        this.utilisateurService = utilisateurService;
+    public InterfaceAcceuil(MockIncidentService MockIncidentService,MockUtilisateurService MockUtilisateurService, Utilisateur utilisateurConnecte){
+        this.MockIncidentService = MockIncidentService;
+        this.MockUtilisateurService = MockUtilisateurService;
         this.utilisateurConnecte = utilisateurConnecte;
 
         configurerFenetre();
@@ -74,7 +75,7 @@ public class InterfaceAcceuil extends JFrame{
         //creation de ticket
         JButton btnNouveau = new JButton("+ Créer un ticket");
         btnNouveau.addActionListener(e -> {
-            InterfaceCreation popupCreation = new InterfaceCreation(this, incidentService, utilisateurService);
+            InterfaceCreation popupCreation = new InterfaceCreation(this, MockIncidentService, MockUtilisateurService);
             popupCreation.setVisible(true);
         });
         searchPanel.add(btnNouveau);
@@ -161,7 +162,7 @@ public class InterfaceAcceuil extends JFrame{
     protected void rafraichirTableau(){
         tableModel.setRowCount(0);//vide les lignes
 
-        List<Ticket> tickets = incidentService.obtenirTousLesTickets();
+        List<Ticket> tickets = MockIncidentService.obtenirTousLesTickets();
 
         for(Ticket t : tickets){
 
@@ -191,11 +192,11 @@ public class InterfaceAcceuil extends JFrame{
             String idTexte = (String) tableModel.getValueAt(ligneSelectionnee, 0);
             Long ticketId = Long.parseLong(idTexte.substring(1));//enleve le premier caractère -
 
-            Ticket ticket = incidentService.obtenirTicket(ticketId);
+            Ticket ticket = MockIncidentService.obtenirTicket(ticketId);
 
             if (ticket != null) {
                 //ouvre l'interface de mofif si ticket existe bien
-                InterfaceModification popup = new InterfaceModification(this, incidentService, ticket);
+                InterfaceModification popup = new InterfaceModification(this, MockIncidentService, ticket);
                 popup.setVisible(true);
             }
         }
@@ -218,7 +219,7 @@ public class InterfaceAcceuil extends JFrame{
 
             if (choix == JOptionPane.YES_OPTION) {
                 try {
-                    incidentService.supprimerTicket(ticketId);
+                    MockIncidentService.supprimerTicket(ticketId);
                     rafraichirTableau();
                     JOptionPane.showMessageDialog(this, "Ticket supprimé avec succès.");
                 } catch (Exception ex) {

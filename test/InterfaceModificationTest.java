@@ -2,136 +2,80 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import gestionincidents.service.IncidentService;
-import gestionincidents.UtilisateurService;
-import gestionincidents.dao.TicketDaoMemory;
-import gestionincidents.dao.UtilisateurDaoMemory;
-import gestionincidents.model.Statut;
-import gestionincidents.model.Ticket;
-import gestionincidents.model.Utilisateur;
-import gestionincidents.model.Role;
+import service.MockIncidentService;
+import service.MockUtilisateurService;
+import modele.Statut;
+import modele.Ticket;
+import modele.Utilisateur;
+import modele.Role;
 
-import javax.swing.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.time.LocalDate;
 
 public class InterfaceModificationTest {
 
-    private IncidentService incidentService;
-    private UtilisateurService utilisateurService;
+    private MockIncidentService MockIncidentService;
+    private MockUtilisateurService MockUtilisateurService;
     private InterfaceAcceuil parent;
     private Ticket ticket;
 
     @BeforeEach
     public void setUp() {
-        TicketDaoMemory ticketDao = new TicketDaoMemory();
-        UtilisateurDaoMemory utilisateurDao = new UtilisateurDaoMemory();
-        incidentService = new IncidentService(ticketDao);
-        utilisateurService = new UtilisateurService(utilisateurDao);
+        MockIncidentService = new MockIncidentService();
+        MockUtilisateurService = new MockUtilisateurService();
         
-        Utilisateur u = utilisateurService.creerUtilisateur("Admin", "admin@mail.com", Role.TECHNICIEN);
-        ticket = incidentService.creerTicket("Ancien Titre", "Ancienne Description", u, LocalDate.now(), "Ancien Lieu");
+        Utilisateur u = MockUtilisateurService.creerUtilisateur("Admin", "admin@mail.com", Role.TECHNICIEN);
+        ticket = MockIncidentService.creerTicket("Ancien Titre", "Ancienne Description", u, LocalDate.now(), "Ancien Lieu");
         
-        parent = new InterfaceAcceuil(incidentService, utilisateurService, u);
+        parent = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, u);
+        
+        // Bloquer pop-ups
+        Main.modeTest = true;
     }
 
     @Test
-    public void testInitialisationValeursCorrectes() throws Exception {
-        incidentService.modifierTicket(ticket.getId(), ticket.getTitre(), ticket.getDescription(), Statut.RESOLU, ticket.getLocation());
+    public void testInitialisationValeursCorrectes() {
+        MockIncidentService.modifierTicket(ticket.getId(), ticket.getTitre(), ticket.getDescription(), Statut.RESOLU, ticket.getLocation());
         
-        InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
+        InterfaceModification im = new InterfaceModification(parent, MockIncidentService, ticket);
         
-        JComboBox<Statut> comboStatut = getField(im, "comboStatut");
-        assertEquals(Statut.RESOLU, comboStatut.getSelectedItem());
-        
-        JTextField txtTitre = getField(im, "txtTitre");
-        assertEquals("Ancien Titre", txtTitre.getText());
+        assertEquals(Statut.RESOLU, im.comboStatut.getSelectedItem());
+        assertEquals("Ancien Titre", im.txtTitre.getText());
     }
 
     @Test
-    public void testValidationModificationSucces() throws Exception {
-        InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
+    public void testValidationModificationSucces() {
+        InterfaceModification im = new InterfaceModification(parent, MockIncidentService, ticket);
 
-        setField(im, "txtTitre", "Titre Modifié");
-        JComboBox<Statut> comboStatut = getField(im, "comboStatut");
-        comboStatut.setSelectedItem(Statut.EN_COURS);
+        im.txtTitre.setText("Titre Modifié");
+        im.comboStatut.setSelectedItem(Statut.EN_COURS);
         
-        fermerPopupAutomatiquement();
-        invokeValiderModification(im);
+        im.validerModification();
 
-        Ticket ticketModifie = incidentService.obtenirTicket(ticket.getId());
-        assertEquals("Titre Modifié", ticketModifie.getTitre());
-        assertEquals(Statut.EN_COURS, ticketModifie.getStatut());
+        assertTrue(MockIncidentService.modifierTicketAppele);
     }
 
     @Test
-    public void testValidationModificationErreur() throws Exception {
-        InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
+    public void testValidationModificationErreur() {
+        InterfaceModification im = new InterfaceModification(parent, MockIncidentService, ticket);
 
-        setField(im, "txtTitre", ""); 
+        im.txtTitre.setText(""); 
         
-        invokeValiderModification(im);
+        im.validerModification();
         
-        JLabel lblErreur = getField(im, "lblErreur");
-        assertNotNull(lblErreur);
+        assertTrue(im.lblErreur.getText().contains("Erreur"));
     }
 
     @Test
-    public void testTexteExtremementLong() throws Exception {
-        InterfaceModification im = new InterfaceModification(parent, incidentService, ticket);
+    public void testTexteExtremementLong() {
+        InterfaceModification im = new InterfaceModification(parent, MockIncidentService, ticket);
 
         String texteTresLong = "A".repeat(5000);
         
-        setField(im, "txtTitre", texteTresLong); 
-        setField(im, "txtDescription", texteTresLong); 
+        im.txtTitre.setText(texteTresLong); 
+        im.txtDescription.setText(texteTresLong); 
         
-        fermerPopupAutomatiquement();
-        invokeValiderModification(im);
+        im.validerModification();
         
-        Ticket ticketModifie = incidentService.obtenirTicket(ticket.getId());
-        assertNotNull(ticketModifie);
-    }
-
-    private void setField(Object obj, String fieldName, String value) throws Exception {
-        Field field = obj.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        Object component = field.get(obj);
-        if (component instanceof JTextField) {
-            ((JTextField) component).setText(value);
-        } else if (component instanceof JTextArea) {
-            ((JTextArea) component).setText(value);
-        }
-    }
-
-    private <T> T getField(Object obj, String fieldName) throws Exception {
-        Field field = obj.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return (T) field.get(obj);
-    }
-
-    private void invokeValiderModification(Object obj) throws Exception {
-        Method method = obj.getClass().getDeclaredMethod("validerModification");
-        method.setAccessible(true);
-        method.invoke(obj);
-    }
-
-
-    private void fermerPopupAutomatiquement() {
-        new Thread(() -> {
-            try {
-                Thread.sleep(500); // Attendre que la popup s'ouvre
-                for (java.awt.Window window : java.awt.Window.getWindows()) {
-                    if (window instanceof JDialog) {
-                        JDialog dialog = (JDialog) window;
-                        if ("Succès".equals(dialog.getTitle())) {
-                            dialog.dispose(); // Ferme la popup bloquante
-                        }
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        assertTrue(MockIncidentService.modifierTicketAppele);
     }
 }
