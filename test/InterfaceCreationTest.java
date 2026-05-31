@@ -152,4 +152,23 @@ public class InterfaceCreationTest {
         assertTrue(ic.lblErreur.getText().contains("déjà été déclaré") || ic.lblErreur.getText().contains("Système"),
                 "L'interface doit capturer l'IllegalStateException et l'afficher en rouge.");
     }
+
+    @Test
+    public void testValidationDateTropAncienne() {
+        InterfaceCreation ic = new InterfaceCreation(parent, MockIncidentService, MockUtilisateurService);
+
+        ic.txtTitre.setText("Vieux Bug");
+        ic.txtDescription.setText("Ancien problème de connexion.");
+        ic.txtLieu.setText("Salle 102");
+
+        ic.txtDate.setText("25/01/2026");
+
+        ic.validerFormulaire();
+
+        assertFalse(MockIncidentService.creerTicketAppele, "Le service ne doit pas être appelé si la date est trop ancienne.");
+        assertEquals(0, MockIncidentService.obtenirTousLesTickets().size());
+
+        assertTrue(ic.lblErreur.getText().contains("ancienne") || ic.lblErreur.getText().contains("Erreur"),
+                "L'interface doit afficher une alerte pour les dates trop anciennes.");
+    }
 }

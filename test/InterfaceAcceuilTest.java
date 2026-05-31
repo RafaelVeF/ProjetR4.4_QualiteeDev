@@ -141,4 +141,28 @@ public class InterfaceAcceuilTest {
         assertEquals(0, interfaceAcceuil.ticketTable.getRowCount(), "Le ticket " +
                 "doit avoir disparu du tableau instantanément.");
     }
+
+    @Test
+    public void testTriDuTableauParColonne() {
+        MockIncidentService.creerTicket("Zèbre HS", "Desc", techUser, LocalDate.of(2026, 5, 30), "Salle A");
+        MockIncidentService.creerTicket("Alpha HS", "Desc", techUser, LocalDate.of(2026, 5, 10), "Salle B");
+        MockIncidentService.creerTicket("Météo HS", "Desc", techUser, LocalDate.of(2026, 5, 20), "Salle C");
+
+        interfaceAcceuil = new InterfaceAcceuil(MockIncidentService, MockUtilisateurService, techUser);
+
+        assertEquals("Zèbre HS", interfaceAcceuil.ticketTable.getValueAt(0, 1));
+
+        interfaceAcceuil.ticketTable.getRowSorter().toggleSortOrder(1);
+        assertEquals("Alpha HS", interfaceAcceuil.ticketTable.getValueAt(0, 1), "La première ligne doit être 'Alpha HS' après tri.");
+        assertEquals("Météo HS", interfaceAcceuil.ticketTable.getValueAt(1, 1), "La deuxième ligne doit être 'Météo HS' après tri.");
+        assertEquals("Zèbre HS", interfaceAcceuil.ticketTable.getValueAt(2, 1), "La troisième ligne doit être 'Zèbre HS' après tri.");
+
+        interfaceAcceuil.ticketTable.getRowSorter().toggleSortOrder(4);
+        LocalDate dateLigne0 = (LocalDate) interfaceAcceuil.ticketTable.getValueAt(0, 4);
+        LocalDate dateLigne1 = (LocalDate) interfaceAcceuil.ticketTable.getValueAt(1, 4);
+        LocalDate dateLigne2 = (LocalDate) interfaceAcceuil.ticketTable.getValueAt(2, 4);
+
+        assertTrue(dateLigne0.isBefore(dateLigne1), "La date de la ligne 0 doit être antérieure à la ligne 1.");
+        assertTrue(dateLigne1.isBefore(dateLigne2), "La date de la ligne 1 doit être antérieure à la ligne 2.");
+    }
 }
